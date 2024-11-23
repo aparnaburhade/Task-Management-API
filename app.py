@@ -76,7 +76,37 @@ def get_tasks():
             "done": task.done
         })
 
-    return jsonify(tasks_list), 200
+#PUT endpoint to update a  task by ID
+@app.route('/tasks/<int:id>', methods=['PUT'])
+def update_task(id):
+    task = Task.query.get(id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+    
+    data = request.get_json()
+    task.title = data.get('title', task.title)
+    task.description = data.get('description', task.description)
+    task.done = data.get('done', task.done)
+
+    db.session.commit()
+
+    return jsonify({
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "done": task.done
+    })
+
+@app.route('/tasks/<int:id>', methods=['DELETE'])
+def delete_task(id):
+    task = Task.query.get(id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+    
+    db.session.delete(task)
+    db.session.commit()
+
+    return jsonify({"message": "Task deleted successfully"})
 
 # Run the app
 if __name__ == '__main__':
